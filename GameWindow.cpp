@@ -2,7 +2,7 @@
 #include "GameWindow.h"
 
 GameWindow::GameWindow(Game& game)
-        : Fl_Window(100, 100, 640, 700, "MazeRunner"), game(game) 
+        : Fl_Window(100, 100, 640, 700, "MazeRunner"), game(game), aiMode(false) 
 {
     // Every widget created between here and end() is put inside this window.
     grid = new Grid(20, 20, game);
@@ -47,33 +47,64 @@ void GameWindow::showSummary()
     }
     snprintf(summaryText, sizeof(summaryText),
              "GAME OVER\n\n"
-             "Mode: Human\n"
+             "Mode: %s\n"
              "Result: %s\n\n"
              "Score: %d\n"
              "Treasures collected: %d/%d\n"
              "Lives remaining: %d\n"
              "Turns: %d",
-             result, game.getScore(), game.getTreasuresCollected(), TREASURE_COUNT,
+             aiMode ? "AI (BFS)" : "Human", result, game.getScore(), game.getTreasuresCollected(), TREASURE_COUNT,
              game.getLives(), game.getTurns());
     summary->label(summaryText);
     summary->show();
     summary->redraw();
 }
 
+// One whole turn (player, enemies, collisions) and then show the result.
+// Used for the keyboard and for the AI, so it is written only once.
+void GameWindow::playTurn(char direction) 
+{
+    game.movePlayer(direction);
+    grid->update(game);
+    updateStatus();
+    if (game.isOver()) 
+    {
+        showSummary();
+    }
+}
+
+// FLTK calls this function after AI_DELAY seconds. We cannot write our own
+// while loop (FLTK would freeze), so every call plays ONE turn and then asks
+// FLTK to call it again, until the game is over.
+// It is static because FLTK needs a plain function; 'data' is the window.
+void GameWindow::aiTimer(void* data) 
+{
+    GameWindow* window = static_cast<GameWindow*>(data);
+    char move = window->ai.chooseMove(window->game);  // BFS: next step
+    window->playTurn(move);
+    if (!window->game.isOver()) 
+    {
+        Fl::repeat_timeout(AI_DELAY, aiTimer, data);
+    }
+}
+
 // FLTK calls handle() for every event (key press, mouse click, ...).
-int GameWindow::handle(int event) {
-    if (event == FL_KEYDOWN) {
+int GameWindow::handle(int event) 
+{
+    if (event == FL_KEYDOWN && !aiMode) 
+    {
         int key = Fl::event_key();  // letters arrive as lowercase: 'w', 'a', ...
         if (key == 'w' || key == 'a' || key == 's' || key == 'd') 
         {
-            game.movePlayer(key);   // one whole turn: player, enemies, collisions
-            grid->update(game);     // display the result
-            updateStatus();
-            if (game.isOver()) 
-            {    // check whether the game has ended
-                showSummary();
-            }
+            playTurn(key);
             return 1;  // we used this event
+        }
+        // I = AI Mode: from now on the AI plays and the keyboard is ignored
+        if (key == 'i' && !game.isOver()) 
+        {
+            aiMode = true;
+            Fl::add_timeout(AI_DELAY, aiTimer, this);
+            return 1;
         }
     }
     return Fl_Window::handle(event);  // anything else: normal window behaviour

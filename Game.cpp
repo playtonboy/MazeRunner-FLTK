@@ -11,7 +11,7 @@ Game::Game()
     treasuresCollected = 0;
     won = false;
     lost = false;
-    message = "Move with W A S D";
+    message = "Move with W A S D, or press I to let the AI play";
 }
 
 void Game::load(const string& filename) 
@@ -216,6 +216,11 @@ char Game::getSymbol(int row, int col) const
         return 'E';
     }
     return maze.getSymbol(row, col);
+}
+
+Position Game::getPlayerPosition() const 
+{
+    return player.getPosition();
 }
 
 int Game::getTurns() const 

@@ -36,6 +36,7 @@ public:
     void load(const std::string& filename);
     bool movePlayer(char direction);
     char getSymbol(int row, int col) const;
+    Position getPlayerPosition() const;
     int getTurns() const;
     int getScore() const;
     int getLives() const;
