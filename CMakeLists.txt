@@ -18,7 +18,7 @@ if(NOT FLTK_FOUND)
 endif()
 
 add_executable(mazerunner_gui
-    main.cpp Maze.cpp Player.cpp Enemy.cpp Game.cpp Block.cpp Grid.cpp GameWindow.cpp)
+    main.cpp Maze.cpp Player.cpp Enemy.cpp Game.cpp Block.cpp Grid.cpp GameWindow.cpp AIPlayer.cpp)
 
 if(TARGET fltk)
     target_link_libraries(mazerunner_gui PRIVATE fltk)

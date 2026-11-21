@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -std=c++11 -Wall $(shell fltk-config --cxxflags)
 LDLIBS = $(shell fltk-config --ldflags)
 
-OBJS = main.o Maze.o Player.o Enemy.o Game.o Block.o Grid.o GameWindow.o
+OBJS = main.o Maze.o Player.o Enemy.o Game.o Block.o Grid.o GameWindow.o AIPlayer.o
 
 mazerunner_gui: $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDLIBS)
